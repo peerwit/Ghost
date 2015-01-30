@@ -1,5 +1,5 @@
 // Define our main state
-var board, tiles, zone, posDragStart = {}, posDragStop = {}, tileMap = {};
+var xboard, tiles, zone, posDragStart = {}, posDragStop = {}, tileMap = {};
 
 var game = new Phaser.Game(300, 470, Phaser.AUTO, 'mathCrush', { preload: preload, create: create, update: update });
 
@@ -7,20 +7,21 @@ var game = new Phaser.Game(300, 470, Phaser.AUTO, 'mathCrush', { preload: preloa
 
 
 function preload() {
-  board = new Board();
-
+  xboard = new Board();
+  xboard._render = render;
+  xboard.__render = true;
   // Tribute to Andrew! You really don't need jQuery for everything...
-  document.getElementById('target').innerHTML = board.target;
-  document.getElementById('operation').innerHTML = board.opName;
+  document.getElementById('target').innerHTML = xboard.target;
+  document.getElementById('operation').innerHTML = xboard.opName;
   // document.getElementById('message').innerHTML = swappable;
 }
 
 function create() { 
   tiles = game.add.group();
-  board._iterate(function(tuple) {
+  xboard._iterate(function(tuple) {
     var x = 15 + tuple[1] * 50;
     var y = 15 + tuple[0] * 37.5;
-    var v = board._get(tuple);
+    var v = xboard._get(tuple);
     var text = game.add.text(x,y,v + '', {fill: "green"}, tiles);
     text.tuple = tuple;
     tileMap[JSON.stringify(tuple)] = text;
@@ -31,7 +32,7 @@ function create() {
       posDragStart.y = text.position.y;
     }, this);
     text.events.onDragStop.add(function(text, pointer){
-      var n = board._getNeighbors(text.tuple);
+      var n = xboard._getNeighbors(text.tuple);
       n = n.map(function(e) {return tileMap[JSON.stringify(e)]})
       n.forEach(function(e) {
         checkOverlap(text, e) ? intendedSwap(text, e) : defaultify(text);
@@ -43,10 +44,27 @@ function create() {
   console.log(tiles);
 }
 
+function render () {
+  xboard._iterate(function(tuple) {
+    var x = 15 + tuple[1] * 50;
+    var y = 15 + tuple[0] * 37.5;
+    var v = xboard._get(tuple);
+    text = tileMap[JSON.stringify(tuple)];
+    text.text = v;
+    // text.events.onMouseOver.add(function(){console.log(arguments);}, this);
+    // text.input.mouserOverCallback
+  })
+}
 function update(eve) {
   if (checkOverlap(tiles.children[0], tiles.children[1])) {
     console.log("yay")
   };
+}
+
+function Auto(){
+  xboard.autoSwapper(function(t1, t2) {
+    intendedSwap(tileMap[JSON.stringify(t1)], tileMap[JSON.stringify(t2)]);
+  });
 }
 
 function checkOverlap(spriteA, spriteB) {
@@ -62,7 +80,7 @@ function defaultify(sprite) {
 }
 
 function intendedSwap(spriteA, spriteB) {
-    var swappable = board.isValidSwap(spriteA.tuple, spriteB.tuple);
+    var swappable = xboard.isValidSwap(spriteA.tuple, spriteB.tuple);
     var falseMsg = "Sorry you cannot make that swap";
     var trueMsg = "Well done!"
     document.getElementById('message').innerHTML = swappable?trueMsg:falseMsg;
@@ -72,10 +90,9 @@ function intendedSwap(spriteA, spriteB) {
       spriteA.fill = spriteB.fill;
       spriteB.fill = temp;
       temp = [];
-      board = board.swap(spriteA.tuple, spriteB.tuple, function(swappedOut) {
+      xboard = xboard.swap(spriteA.tuple, spriteB.tuple, function(swappedOut) {
         temp = swappedOut;
         temp.forEach(function(e) {
-          console.log(board._get(e), JSON.stringify(e));
         })
       });
       temp.forEach(function(e) {
@@ -84,14 +101,18 @@ function intendedSwap(spriteA, spriteB) {
       })
       temp.indexOf(spriteB.tuple) < 0?temp.push(spriteB.tuple):null;
       temp.indexOf(spriteA.tuple) < 0?temp.push(spriteA.tuple):null;
-      console.log(temp);
       temp.forEach(function(e) {
         text = tileMap[JSON.stringify(e)];
-        text.setText(board._get(e));
+        text.setText(xboard._get(e));
         text.fill = text.fill === "blue"?"blue":"green";
       })
-      document.getElementById('score').innerHTML = board.score;
+      document.getElementById('score').innerHTML = xboard.score;
+      render();
     }
+    else {
+      console.log(spriteA.tuple, spriteB.tuple, xboard.state);
+    }
+    // render();
 
 }
 

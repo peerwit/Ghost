@@ -6,8 +6,9 @@ var Board = function(m, n, operation, target, difficulty) {
 	this.state = this.board = [[]];
 	this._create(m, n, operation, target, difficulty);
 	this.score = 0;
-	
+	this.__render = false;
 }
+
 
 // Takes a string or an array and gets board attributes
 // WILL mutate array
@@ -77,6 +78,33 @@ Board.prototype.swap = Board.prototype.makeSwap = function(t1, t2, cb, cb2){
 	return this;
 }
 
+Board.prototype.swapForce = function(t1, t2, cb, cb2){
+	if (!t1 || !t2){throw new Error ('cannot call swap without two tuples')}
+	if (typeof t1 !== 'object' || typeof t2 !== 'object'){throw new Error ('cannot call swap without two tuples')}
+	if (!t1.length || !t2.length){throw new Error ('cannot call swap without two tuples')}
+	if (t1.length !== 2 || t2.length !== 2){throw new Error ('cannot call swap without two tuples')}
+
+	if (!this.isValidSwap(t1,t2)) {
+		throw new Error ('has inValid swap. Call the isValidSwap fn before calling swap.')
+	}
+
+	cb = cb || function(){};
+	cb2 = cb2 || function(){};
+
+	var array = this.idMatches(t1, t2).concat(this.idMatches(t2,t1));
+	// console.log("FDs", array, this.idMatches(t1, t2), this.idMatches(t1, t2));
+	// swaps the tuples on the board
+	var temp = this._get(t1);
+	this._set(t1, this._get(t2));
+	this._set(t2, temp);
+
+	// callback for interacting with the nodes which operate to the target
+	cb(array);
+	this._regenConsumedNodes(array);
+	this.score += (1000 * array.length);
+	return this;
+}
+
 // Come back to if time allows
 // Board.prototype.setRange = function() {
 // 	var op = this.operation;
@@ -91,8 +119,9 @@ Board.prototype.generateRandom = Board.prototype.ran = function() {
 }
 
 Board.prototype.isInBounds = function(tuple, board) {
-	board = board || this.board;
-	if (tuple[0] > board.length - 1 || tuple[0] < 0 || tuple[1] > board[0].length - 1 || tuple[1] < 0) {
+	board = this.board;
+	// console.log(board.length - 1, board[0].length - 1);
+	if (+tuple[0] > (board.length - 1) || +tuple[0] < 0 || +tuple[1] > (board[0].length - 1) || +tuple[1] < 0) {
 		return false;
 	}
 	return true;
@@ -109,7 +138,7 @@ Board.prototype.isValidSwap = Board.prototype.isValid = function(t1, t2){
 	// 	return false;
 	// }
 	// console.log(t1,t2);
-	return this.operatesToTarget(t1, t2);
+	return this.operatesToTarget(t1, t2) || this.operatesToTarget(t2, t1);
 }
 
 Board.prototype.operatesToTarget = Board.prototype.operates = function(t1, t2, target, operation, board){
@@ -132,6 +161,19 @@ Board.prototype.operatesToTarget = Board.prototype.operates = function(t1, t2, t
 	return false;
 }
 
+Board.prototype.autoSwapper = function(cb){
+	target = target || this.target;
+	operation = operation || this.operation;
+	board = this.board;
+	var that = this;
+	this._iterate(function(tuple) {
+		var n = that._getNeighbors(tuple);
+		for (var i = 0; i < n.length; i++) {
+			that.isValidSwap(tuple, n[i]) ? cb(tuple, n[i]) : null;
+		}
+	});
+
+}
 
 Board.prototype.idMatches = function(currentTuple, proposedTuple, target, operation, board) {
 	target = target || this.target;
@@ -186,7 +228,7 @@ Board.prototype._regenConsumedNodes = function(array) {
 	array.forEach(function(e) {
 		that._updateIfMatch(e);
 	})
-	return board;
+	return this;
 }
 
 Board.prototype._isPlayable = function() {
@@ -215,8 +257,11 @@ Board.prototype._isPlayable = function() {
 }
 
 Board.prototype._refresh = function() {
-	console.log(this.range, this.rows, this.cols);
-	this._create(this.range[0],this.range[1]);
+	console.log('refreshing', this.rows, this.cols)
+	this._create(this.rows,this.cols);
+	if (this.__render) {
+		this._render();
+	}
 }
 
 Board.prototype._setBoardInit = Board.prototype._init =  function(min, max){
@@ -316,7 +361,7 @@ Board.prototype._updateIfMatch = function(tuple){
 		neighborValHash[board[n[0]][n[1]]] = board[n[0]][n[1]];
 	})
 	flag ? (board[tuple[0]][tuple[1]] = update(board[tuple[0]][tuple[1]], that.op, that.target)) : null;
-	
+	this.board = board;
 
 
 	function update(val, fn, target) {

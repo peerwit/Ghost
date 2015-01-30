@@ -5,6 +5,7 @@
 var Board = function(m, n, operation, target, difficulty) {
 	this.state = this.board = [[]];
 	this._create(m, n, operation, target, difficulty);
+	this.score = 0;
 	
 }
 
@@ -42,6 +43,7 @@ Board.prototype._create = function(m, n, operation, difficulty) {
 	this.rows = m || this.rows || 12;
 	this.cols = n || this.cols || 6;
 	this.op = this.operation = operation || this.op || this.opsList.add;
+	this.opName = operation || "addition";
 	this.diff = this.difficulty = difficulty || this.diff || 1;
 	this.state = this.board = this._makeBoard(this.rows, this.cols);
 	return this;
@@ -69,11 +71,9 @@ Board.prototype.swap = Board.prototype.makeSwap = function(t1, t2, cb, cb2){
 
 	// callback for interacting with the nodes which operate to the target
 	cb(array);
-
-
 	this._regenConsumedNodes(array);
 	this._isPlayable()?null:this._refresh();
-
+	this.score += (1000 * array.length);
 	return this;
 }
 
@@ -345,7 +345,7 @@ Board.prototype._removeMatches = function() {
 }
 
 Board.prototype.genId = function(tuple) {
-	
+
 }
 
 // var readline = require('readline');

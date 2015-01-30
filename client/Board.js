@@ -132,11 +132,11 @@ Board.prototype.isValidSwap = Board.prototype.isValid = function(t1, t2){
 	if (!this.isInBounds(t1) || !this.isInBounds(t2)) {
 		return false;
 	}
-	// console.log(this._getNeighbors(t2), t1)
 
-	// if (this._getNeighbors(t2).indexOf(t1) === -1) {
-	// 	return false;
-	// }
+	if (this._getNeighbors(t2).map(function(e) {return JSON.stringify(e)}).indexOf(JSON.stringify(t1)) === -1) {
+		console.log("got one!")
+		return false;
+	}
 	// console.log(t1,t2);
 	return this.operatesToTarget(t1, t2) || this.operatesToTarget(t2, t1);
 }
@@ -405,16 +405,17 @@ Board.prototype.genId = function(tuple) {
 // 	var t1 = JSON.parse(a.shift());
 // 	var t2 = JSON.parse(a.shift());
 // 	console.log("IS VALID", b1.isValidSwap(t1,t2));
+// 	console.log(b1.isValidSwap(t1,t2)?null:"CANNOT SWAP");
 // 	b1.swap(t1,t2);
 // 	console.log(b1.get(['state', 'target']));
-// 	rl.close();
+// 	// rl.close();
 // });
 
 // // ----
 // var b1 = new Board();
 
 // console.log(b1.get('state'), "+++");
-// b1.swap([0,0],[0,1])
+// // b1.swap([0,0],[0,1])
 
 
 

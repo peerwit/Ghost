@@ -390,7 +390,7 @@ Board.prototype._removeMatches = function() {
 }
 
 Board.prototype.genId = function(tuple) {
-
+	//
 }
 
 // var readline = require('readline');

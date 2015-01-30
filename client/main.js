@@ -1,3 +1,6 @@
+// Simple Game implementation by Pranay
+  // v 0.0.1 (01/30/15)
+
 // Define our main state
 var xboard, tiles, zone, posDragStart = {}, posDragStop = {}, tileMap = {};
 
@@ -10,6 +13,7 @@ function preload() {
   xboard = new Board();
   xboard._render = render;
   xboard.__render = true;
+  
   // Tribute to Andrew! You really don't need jQuery for everything...
   document.getElementById('target').innerHTML = xboard.target;
   document.getElementById('operation').innerHTML = xboard.opName;
@@ -41,7 +45,6 @@ function create() {
     // text.events.onMouseOver.add(function(){console.log(arguments);}, this);
     // text.input.mouserOverCallback
   })
-  console.log(tiles);
 }
 
 function render () {
@@ -57,7 +60,6 @@ function render () {
 }
 function update(eve) {
   if (checkOverlap(tiles.children[0], tiles.children[1])) {
-    console.log("yay")
   };
 }
 

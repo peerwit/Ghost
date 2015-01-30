@@ -1,0 +1,16 @@
+{
+  "name": "mathCrush",
+  "version": "0.0.1",
+  "author": "PranayIO",
+  "keywords": [
+    "PranayIO",
+    "gametraining",
+    "math"
+  ],
+  "dependencies": {
+    "express": "^4.11.1",
+    "phaser": "^2.2.2"
+  },
+  "optionalDependencies": {},
+  "devDependencies": {}
+}

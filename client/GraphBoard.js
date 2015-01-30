@@ -1,18 +1,23 @@
 // Simple Boards implementation by Pranay
 	// v 0.0.1 (01/29/15)
 
+var Graph = require('./Graphyc.js');
+
 // BOARD CLASS - gives you a new playable board DEPENDS on Graphyc.js
-var Board = function(m, n, operation, target, difficulty) {
+var GraphycBoard = function(nodes, organization, operation, target, difficulty) {
+	Graph.call(this, nodes);
 	this.state = this.board = [[]];
-	this._create(m, n, operation, target, difficulty);
+	this._create(nodes, organization, operation, target, difficulty);
 	this.score = 0;
 	this.__render = false;
 }
 
+GraphycBoard.prototype = Object.create(Graph.prototype);
+GraphycBoard.prototype.constructor = GraphycBoard;
 
 // Takes a string or an array and gets board attributes
 // WILL mutate array
-Board.prototype.get = function(attr) {
+GraphycBoard.prototype.get = function(attr) {
 	var that = this;
 	if (typeof attr === 'string'){
 		return this[attr];
@@ -28,7 +33,7 @@ Board.prototype.get = function(attr) {
 }
 
 	
-Board.prototype.operationsList = Board.prototype.opsList = {
+GraphycBoard.prototype.operationsList = GraphycBoard.prototype.opsList = {
 	add:function (a, b){return a + b},
 	addition:function (a, b){return a + b},
 	sub:function (a, b){return a - b},
@@ -40,17 +45,17 @@ Board.prototype.operationsList = Board.prototype.opsList = {
 	mod:function (a, b) {return a % b}
 }
 
-Board.prototype._create = function(m, n, operation, difficulty) {
-	this.rows = m || this.rows || 12;
-	this.cols = n || this.cols || 6;
+GraphycBoard.prototype._create = function(nodes, organization, operation, difficulty) {
+	this.nodes = nodes || 66;
 	this.op = this.operation = operation || this.op || this.opsList.add;
 	this.opName = operation || "addition";
 	this.diff = this.difficulty = difficulty || this.diff || 1;
-	this.state = this.board = this._makeBoard(this.rows, this.cols);
+	this.state = this.board = this.list;
+	this._makeBoard(this.nodes, organization);
 	return this;
 }
 
-Board.prototype.swap = Board.prototype.makeSwap = function(t1, t2, cb, cb2){
+GraphycBoard.prototype.swap = GraphycBoard.prototype.makeSwap = function(t1, t2, cb, cb2){
 	if (!t1 || !t2){throw new Error ('cannot call swap without two tuples')}
 	if (typeof t1 !== 'object' || typeof t2 !== 'object'){throw new Error ('cannot call swap without two tuples')}
 	if (!t1.length || !t2.length){throw new Error ('cannot call swap without two tuples')}
@@ -78,7 +83,7 @@ Board.prototype.swap = Board.prototype.makeSwap = function(t1, t2, cb, cb2){
 	return this;
 }
 
-Board.prototype.swapForce = function(t1, t2, cb, cb2){
+GraphycBoard.prototype.swapForce = function(t1, t2, cb, cb2){
 	if (!t1 || !t2){throw new Error ('cannot call swap without two tuples')}
 	if (typeof t1 !== 'object' || typeof t2 !== 'object'){throw new Error ('cannot call swap without two tuples')}
 	if (!t1.length || !t2.length){throw new Error ('cannot call swap without two tuples')}
@@ -106,19 +111,19 @@ Board.prototype.swapForce = function(t1, t2, cb, cb2){
 }
 
 // Come back to if time allows
-// Board.prototype.setRange = function() {
+// GraphycBoard.prototype.setRange = function() {
 // 	var op = this.operation;
 // 	var diff = this.difficulty;
 
 // };
 
-Board.prototype.generateRandom = Board.prototype.ran = function() {
+GraphycBoard.prototype.generateRandom = GraphycBoard.prototype.ran = function() {
 	var range = this.range;
 	var target = this.target;
 	return Math.floor(Math.random()*(this.range[1] - this.range[0])) + this.range[0];
 }
 
-Board.prototype.isInBounds = function(tuple, board) {
+GraphycBoard.prototype.isInBounds = function(tuple, board) {
 	board = this.board;
 	// console.log(board.length - 1, board[0].length - 1);
 	if (+tuple[0] > (board.length - 1) || +tuple[0] < 0 || +tuple[1] > (board[0].length - 1) || +tuple[1] < 0) {
@@ -128,7 +133,7 @@ Board.prototype.isInBounds = function(tuple, board) {
 } 
 
 // Pass in two arrays t1 = [i1, j1] &&  t2 = [i2, j2]
-Board.prototype.isValidSwap = Board.prototype.isValid = function(t1, t2){
+GraphycBoard.prototype.isValidSwap = GraphycBoard.prototype.isValid = function(t1, t2){
 	if (!this.isInBounds(t1) || !this.isInBounds(t2)) {
 		return false;
 	}
@@ -141,7 +146,7 @@ Board.prototype.isValidSwap = Board.prototype.isValid = function(t1, t2){
 	return this.operatesToTarget(t1, t2) || this.operatesToTarget(t2, t1);
 }
 
-Board.prototype.operatesToTarget = Board.prototype.operates = function(t1, t2, target, operation, board){
+GraphycBoard.prototype.operatesToTarget = GraphycBoard.prototype.operates = function(t1, t2, target, operation, board){
 	target = target || this.target;
 	operation = operation || this.operation;
 	board = board || this.board;
@@ -161,7 +166,7 @@ Board.prototype.operatesToTarget = Board.prototype.operates = function(t1, t2, t
 	return false;
 }
 
-Board.prototype.autoSwapper = function(cb){
+GraphycBoard.prototype.autoSwapper = function(cb){
 	target = target || this.target;
 	operation = operation || this.operation;
 	board = this.board;
@@ -175,7 +180,7 @@ Board.prototype.autoSwapper = function(cb){
 
 }
 
-Board.prototype.idMatches = function(currentTuple, proposedTuple, target, operation, board) {
+GraphycBoard.prototype.idMatches = function(currentTuple, proposedTuple, target, operation, board) {
 	target = target || this.target;
 	operation = operation || this.operation;
 	board = board || this.board;
@@ -195,31 +200,36 @@ Board.prototype.idMatches = function(currentTuple, proposedTuple, target, operat
 
 
 // private methods not intended to be called directly
-Board.prototype._get = function(tuple) {
+GraphycBoard.prototype._get = function(tuple) {
 	return this.board[tuple[0]][tuple[1]];
 }
 
-Board.prototype._set = function(tuple, val) {
+GraphycBoard.prototype._set = function(tuple, val) {
 	this.board[tuple[0]][tuple[1]] = val;
 	return true;
 }
 
-Board.prototype._makeBoard = function(m,n) {
+GraphycBoard.prototype._makeBoard = function(nodes, organization) {
 	var board = [];
-	for(var i = 0; i < m; i++) {
-		board[i] = [];
-		for (var j = 0; j < n; j++) {
-			board[i][j] = null;
-		}
-	}
-	this.state = this.board = board;
-	this._init();
-	this._removeMatches();
-	this._isPlayable()?null:this._refresh();
+	this._makeList(nodes);
+	this._makeVals(nodes);
+	this._order(organization);
 	return board;
 }
 
-Board.prototype._regenConsumedNodes = function(array) {
+GraphycBoard.prototype._order = function(organization) {
+	var list = this.list;
+	var nodes = this.nodes;
+	var rows = organization;
+	if ((nodes % rows) !== 0) {
+		throw new Error('nodes must be divisible by organization')
+	}
+	var cols = nodes/rows;
+	list = list.slice(0, rows/2);
+	console.log(rows, cols);
+}
+
+GraphycBoard.prototype._regenConsumedNodes = function(array) {
 	var board = this.board;
 	var that = this;
 	array.forEach(function(e) {
@@ -231,7 +241,7 @@ Board.prototype._regenConsumedNodes = function(array) {
 	return this;
 }
 
-Board.prototype._isPlayable = function() {
+GraphycBoard.prototype._isPlayable = function() {
 	var that = this, grandFlag = false;
 	this._iterateWithBreak(bfs2.bind(that));
 	return grandFlag;
@@ -256,7 +266,7 @@ Board.prototype._isPlayable = function() {
 	}
 }
 
-Board.prototype._refresh = function() {
+GraphycBoard.prototype._refresh = function() {
 	console.log('refreshing', this.rows, this.cols)
 	this._create(this.rows,this.cols);
 	if (this.__render) {
@@ -264,7 +274,7 @@ Board.prototype._refresh = function() {
 	}
 }
 
-Board.prototype._setBoardInit = Board.prototype._init =  function(min, max){
+GraphycBoard.prototype._setBoardInit = GraphycBoard.prototype._init =  function(min, max){
 	this.range = [(min||0), (max||9)];
 	this.target = this.range[0] + this.range[1];
 	var board = this.state;
@@ -276,7 +286,7 @@ Board.prototype._setBoardInit = Board.prototype._init =  function(min, max){
 	return this;
 }
 
-Board.prototype._iterate = Board.prototype._each = function(cb) {
+GraphycBoard.prototype._iterate = GraphycBoard.prototype._each = function(cb) {
 	var board = this.state; 
 	for (var i = 0; i < board.length; i++) {
 		for (var j = 0; j < board[i].length; j++) {
@@ -285,7 +295,7 @@ Board.prototype._iterate = Board.prototype._each = function(cb) {
 	}
 }
 
-Board.prototype._iterateWithBreak = Board.prototype._eachWithBreak = function(cb) {
+GraphycBoard.prototype._iterateWithBreak = GraphycBoard.prototype._eachWithBreak = function(cb) {
 	var board = this.state; 
 	for (var i = 0; i < board.length; i++) {
 		for (var j = 0; j < board[i].length; j++) {
@@ -295,7 +305,7 @@ Board.prototype._iterateWithBreak = Board.prototype._eachWithBreak = function(cb
 	}
 }
 
-Board.prototype._filter = function(cb) {
+GraphycBoard.prototype._filter = function(cb) {
 	var board = this.state; 
 	for (var i = 0; i < board.length; i++) {
 		for (var j = 0; j < board[i].length; j++) {
@@ -304,7 +314,7 @@ Board.prototype._filter = function(cb) {
 	}
 }
 
-Board.prototype._map = function(cb) {
+GraphycBoard.prototype._map = function(cb) {
 	var board = this.state; 
 	for (var i = 0; i < board.length; i++) {
 		for (var j = 0; j < board[i].length; j++) {
@@ -313,13 +323,13 @@ Board.prototype._map = function(cb) {
 	}
 }
 
-Board.prototype._eachOnNeighbors = function(tuple, cb) {
+GraphycBoard.prototype._eachOnNeighbors = function(tuple, cb) {
 	this._getNeighbors(tuple).forEach(function(e) {
 		cb(tuple, e);
 	})
 }
 
-Board.prototype._filterOnNeighbors = function(tuple, cb) {
+GraphycBoard.prototype._filterOnNeighbors = function(tuple, cb) {
 	var neighbors = [];
 	neighbors.push([tuple[0] + 1, tuple[1]]);
 	neighbors.push([tuple[0] - 1, tuple[1]]);
@@ -336,7 +346,7 @@ Board.prototype._filterOnNeighbors = function(tuple, cb) {
 	return results;
 }
 
-Board.prototype._getNeighbors = function(tuple) {
+GraphycBoard.prototype._getNeighbors = function(tuple) {
 	var neighbors = [];
 	neighbors.push([tuple[0] + 1, tuple[1]]);
 	neighbors.push([tuple[0] - 1, tuple[1]]);
@@ -349,7 +359,7 @@ Board.prototype._getNeighbors = function(tuple) {
 }
 
 
-Board.prototype._updateIfMatch = function(tuple){
+GraphycBoard.prototype._updateIfMatch = function(tuple){
 	var neighborValHash = {};
 	var board = this.state;
 	var flag = false;
@@ -385,59 +395,16 @@ Board.prototype._updateIfMatch = function(tuple){
 	}
 }
 
-Board.prototype._removeMatches = function() {
+GraphycBoard.prototype._removeMatches = function() {
 	this._iterate(this._updateIfMatch.bind(this));
 }
 
-Board.prototype.genId = function(tuple) {
+GraphycBoard.prototype.genId = function(tuple) {
 
 }
 
-// var readline = require('readline');
-
-// var rl = readline.createInterface({
-//   input: process.stdin,
-//   output: process.stdout
-// });
-
-// rl.question("", function(tuples) {
-// 	var a = tuples.split("p")
-// 	var t1 = JSON.parse(a.shift());
-// 	var t2 = JSON.parse(a.shift());
-// 	console.log("IS VALID", b1.isValidSwap(t1,t2));
-// 	b1.swap(t1,t2);
-// 	console.log(b1.get(['state', 'target']));
-// 	rl.close();
-// });
-
-// // ----
-// var b1 = new Board();
-
-// console.log(b1.get('state'), "+++");
-// b1.swap([0,0],[0,1])
-
-
-
-/* How to use the board api..
-
-# Instantiate a new Board (new Board())
-# Get Board for rendering
-# Use user DOM events to swap (call isValidSwap before swapping) -- feedback on whether or not isValidSwap should be called is welcome
-# Get Board to re-render 
-
-## Todo points system and timer (should it sync with the server?)
-
-*/
-
-
-
-
-// var testboard = new Board();
-// testboard.board = [[1,0,1,0],[0,0,0,0]];
-// console.log(testboard.board)
-// testboard.target = 2;
-// testboard.swap([0,0],[0,1]);
-// console.log(testboard.board);
+var gboard = new GraphycBoard(72, 12);
+console.log(gboard);
 
 
 

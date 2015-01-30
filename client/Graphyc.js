@@ -127,14 +127,5 @@ Graph.prototype.bfs = function(node, stopDepth, cb){
 	rec(node, 0);
 }
 
-var graph = new Graph(4);
-graph._set('list', [[1,2],[0],[0, 3],[]])
-console.log(graph.list);
-// graph._connect(3,1);
-console.log(graph.list);
-graph.bfs(2,1,function(e) {
-	console.log(this.values[e], this.list[e], e)
-})
-
-
+module.exports = Graph;
 

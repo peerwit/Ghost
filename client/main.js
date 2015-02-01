@@ -2,7 +2,7 @@
   // v 0.0.1 (01/30/15)
 
 // Define our main state
-var xboard, tiles, zone, posDragStart = {}, posDragStop = {}, tileMap = {};
+var xboard, tiles, zones, zone, posDragStart = {}, posDragStop = {}, tileMap = {};
 
 var game = new Phaser.Game(300, 470, Phaser.AUTO, 'mathCrush', { preload: preload, create: create, update: update });
 
@@ -13,7 +13,7 @@ function preload() {
   xboard = new Board();
   xboard._render = render;
   xboard.__render = true;
-  
+
   // Tribute to Andrew! You really don't need jQuery for everything...
   document.getElementById('target').innerHTML = xboard.target;
   document.getElementById('operation').innerHTML = xboard.opName;
@@ -22,9 +22,22 @@ function preload() {
 
 function create() { 
   tiles = game.add.group();
+  zones = game.add.group();
   xboard._iterate(function(tuple) {
     var x = 15 + tuple[1] * 50;
     var y = 15 + tuple[0] * 37.5;
+
+    // game.completionSprite = game.add.graphics( x - 5, y );
+    // game.completionSprite.beginFill(0x0000FF, 1);
+    // game.completionSprite.bounds = new PIXI.Rectangle(0, 0, 30, 30);
+    // game.completionSprite.drawRect(0, 0, 30, 30);
+    // Zone Addition
+    // var zn = new Phaser.Rectangle(x-25, y-25, 50, 50);
+    // zn.fil
+    // console.log(zn);
+    // // zones.add(zn);
+    // // console.log(zones);
+    // // text
     var v = xboard._get(tuple);
     var text = game.add.text(x,y,v + '', {fill: "green"}, tiles);
     text.tuple = tuple;
@@ -42,6 +55,8 @@ function create() {
         checkOverlap(text, e) ? intendedSwap(text, e) : defaultify(text);
       });
     }, this);
+
+
     // text.events.onMouseOver.add(function(){console.log(arguments);}, this);
     // text.input.mouserOverCallback
   })

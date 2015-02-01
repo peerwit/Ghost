@@ -408,6 +408,8 @@ Board.prototype.genId = function(tuple) {
 	//
 }
 
+
+// READLINE TESTS
 // var readline = require('readline');
 
 // var rl = readline.createInterface({
@@ -426,29 +428,31 @@ Board.prototype.genId = function(tuple) {
 // 	// rl.close();
 // });
 
-// ----
-var n = Math.pow(10,5);
-var j = 0;
-for (var i = 0; i < n; i++) {
-var b1 = new Board(2, 4);
-b1.set('state', [[1,0,1,0],[0,0,0,0]]);
-b1.set('target', 2);
-b1.swap([0,0],[0,1])
 
-// uncomment below line to verify that the test catches matches
-// b1.set('state', [[0,1,1,0],[0,0,0,0]]); 
+// UPDATE TESTS --- 1/31/15
+// // ----
+// var n = Math.pow(10,5);
+// var j = 0;
+// for (var i = 0; i < n; i++) {
+// var b1 = new Board(2, 4);
+// b1.set('state', [[1,0,1,0],[0,0,0,0]]);
+// b1.set('target', 2);
+// b1.swap([0,0],[0,1])
 
-b1._iterate(function(tuple) {
-	var n = b1._getNeighbors(tuple);
-	n.forEach(function(neighbor) {
-		// console.log(b1.target);
-		if (b1.op(b1._get(neighbor), b1._get(tuple)) === 2) {
-			throw new Error('update error');
-		}
-	})
-});
-}
-console.log("Done with no errors on",n,"trials...");
+// // uncomment below line to verify that the test catches matches
+// // b1.set('state', [[0,1,1,0],[0,0,0,0]]); 
+
+// b1._iterate(function(tuple) {
+// 	var n = b1._getNeighbors(tuple);
+// 	n.forEach(function(neighbor) {
+// 		// console.log(b1.target);
+// 		if (b1.op(b1._get(neighbor), b1._get(tuple)) === 2) {
+// 			throw new Error('update error');
+// 		}
+// 	})
+// });
+// }
+// console.log("Done with no errors on",n,"trials...");
 
 
 
